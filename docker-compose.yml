@@ -16,8 +16,9 @@ services:
   web:
     build:
       context: .
-      dockerfile: ./docker/Dockerfile # Dockerfileの場所を指定
-    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+      dockerfile: ./docker/Dockerfile
+    # Alpine Linuxの標準シェルであるshを使用するように変更
+    command: sh -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
     volumes:
       - .:/app
     ports:
