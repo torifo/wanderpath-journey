@@ -1,0 +1,35 @@
+services:
+  # データベース (PostgreSQL + PostGIS)
+  db:
+    image: postgis/postgis:13-3.1
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: wanderpath_dev
+    ports:
+      # Project2と衝突しないように54320番ポートを使用
+      - "54320:5432"
+
+  # Webアプリケーション (Ruby on Rails)
+  web:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile # Dockerfileの場所を指定
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/app
+    ports:
+      # Railsの標準である3000番ポートを使用
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USER: user
+      DATABASE_PASSWORD: password
+      DATABASE_NAME: wanderpath_dev
+
+volumes:
+  db-data:
