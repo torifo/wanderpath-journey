@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_06_030242) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_06_031406) do
   create_schema "tiger"
   create_schema "tiger_data"
   create_schema "topology"
@@ -420,6 +420,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_06_030242) do
     t.index ["state"], name: "place_lookup_state_idx"
   end
 
+  create_table "posts", force: :cascade do |t|
+    t.string "title", null: false
+    t.text "body"
+    t.string "embed_url"
+    t.bigint "spot_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["spot_id"], name: "index_posts_on_spot_id"
+  end
+
   create_table "secondary_unit_lookup", primary_key: "name", id: { type: :string, limit: 20 }, force: :cascade do |t|
     t.string "abbrev", limit: 5
     t.index ["abbrev"], name: "secondary_unit_lookup_abbrev_idx"
@@ -608,5 +618,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_06_030242) do
     t.string "place", limit: 100, null: false
   end
 
+  add_foreign_key "posts", "spots"
   add_foreign_key "spots", "trips"
 end
