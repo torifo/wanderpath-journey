@@ -7,9 +7,11 @@
 
 アーキテクチャ: モノリシック (Monolithic)
 
-フレームワーク: Ruby on Rails
+フレームワーク: Ruby on Rails 7.2
 
 データベース: PostgreSQL + PostGIS拡張
+
+Rubyバージョン: 3.3
 
 ## 2. 開発環境の起動と停止
 このプロジェクトはDockerで環境を構築しています。
@@ -17,23 +19,33 @@
 ### サーバーの起動
 ```bash
 # プロジェクトルートで実行
-docker compose up -d
+docker compose up
 ```
 Webアプリケーションは `http://localhost:3000` で表示されます。
 
-データベースには `localhost:54320` で接続できます。
+データベースには、DBクライアントなどから `localhost:54320` で接続できます。
 
 ### サーバーの停止
-```bash
-docker compose down
-```
+`docker compose up` を実行しているターミナルで `Ctrl + C` を押します。
+
+コンテナを完全に削除する場合は `docker compose down` を実行します。
 
 ## 3. ディレクトリ構造と主要ファイル
 ```
 .
+├── Gemfile             # 使用するgem(ライブラリ)を定義
+├── README.md           # このドキュメント
+├── app/                # アプリケーションの主要なコード (MVC)
+│   ├── controllers/    # リクエストを処理するコントローラー
+│   ├── models/         # データベースと連携するモデル
+│   └── views/          # ユーザーに表示されるビュー(HTML)
+├── config/             # アプリケーションの設定ファイル
+│   ├── database.yml    # データベース接続設定
+│   └── routes.rb       # URLのルーティング設定
+├── db/                 # データベース関連のファイル
+│   └── migrate/        # テーブル設計図(マイグレーションファイル)
 ├── docker/
 │   └── Dockerfile      # Railsアプリケーション用コンテナの設計図
-├── Gemfile             # 使用するgem(ライブラリ)を定義
 └── docker-compose.yml  # Docker全体の設計図
 ```
 
@@ -47,17 +59,18 @@ docker compose down
 - `54320:5432` (db): PCの54320番ポートをPostGISコンテナの5432番に接続。
 
 #### docker/Dockerfile:
-Railsコンテナの設計図。Ruby本体や、git、postgresql-devなど、gemのインストールやDB接続に必要なライブラリをインストールします。
+Railsコンテナの設計図。Ruby本体や、git、postgresql-dev、yaml-devなど、gemのインストールやDB接続に必要なライブラリをインストールします。Alpine Linuxをベースにしています。
 
 ### 4.2. データベース (PostgreSQL / PostGIS)
 #### 接続情報 (config/database.yml):
-RailsからPostGISコンテナへの接続情報を定義します。この後、Docker環境に合わせて設定を修正する必要があります。
+Docker環境の環境変数を読み込むように設定済みです。
 
-`host`にはdocker-compose.ymlで定義したサービス名である`db`を指定します。
+`host`にはdocker-compose.ymlで定義したサービス名である`db`が自動的に設定されます。
 
 #### テーブル設計 (db/migrate/):
-データベースのテーブル構造は、マイグレーションファイルに定義されます。
+データベースのテーブル構造は、マイグレーションファイルに定義されます。カラムの追加や変更は、新しいマイグレーションファイルを作成して行います。
 
-#### データベースの作成とマイグレーション:
-- データベースの作成: `docker compose exec web rails db:create`
-- マイグレーションの実行: `docker compose exec web rails db:migrate`
+#### データベース関連のコマンド:
+- データベースの作成: `docker compose run --rm web rails db:create` (初回のみ)
+- マイグレーションの実行: `docker compose run --rm web rails db:migrate`
+- マイグレーションの取り消し: `docker compose run --rm web rails db:rollback`
