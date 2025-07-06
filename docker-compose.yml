@@ -18,7 +18,8 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile
     # Alpine Linuxの標準シェルであるshを使用するように変更
-    command: sh -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    # command: sh -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    command: sh -c "rm -f tmp/pids/server.pid && bin/rails tailwindcss:watch & bundle exec rails s -p 3000 -b '0.0.0.0'"
     volumes:
       - .:/app
     ports:
