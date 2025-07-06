@@ -4,7 +4,7 @@
 #   gem install pg
 #
 default: &default
-  adapter: postgresql
+  adapter: postgis # postgresql から postgis に変更
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
