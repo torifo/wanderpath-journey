@@ -1,29 +1,52 @@
 class TripsController < ApplicationController
+  # before_actionに :show を追加
+  before_action :set_trip, only: [:show, :edit, :update, :destroy]
+
   def index
-    @trips = Trip.all
+    @trips = Trip.all.order(start_date: :desc)
   end
 
-  # 新規作成フォームを表示するためのアクション
+  # 詳細ページを表示するためのアクションを追加
+  def show
+    # before_actionで@tripがセットされるので、中身は空でOK
+  end
+
   def new
     @trip = Trip.new
   end
 
-  # フォームから送信されたデータを受け取り、保存するためのアクション
   def create
     @trip = Trip.new(trip_params)
-
     if @trip.save
-      # 保存が成功したら、一覧ページにリダイレクトする
       redirect_to trips_path, notice: "新しい旅行を登録しました。"
     else
-      # 保存が失敗したら、もう一度フォームを表示する
       render :new, status: :unprocessable_entity
     end
   end
 
+  def edit
+  end
+
+  def update
+    if @trip.update(trip_params)
+      redirect_to trips_path, notice: "旅行の情報を更新しました。"
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @trip.destroy
+    redirect_to trips_path, notice: "旅行の記録を削除しました。", status: :see_other
+  end
+
   private
 
-  # Strong Parameters: セキュリティのため、許可したカラムのみを受け取る
+  def set_trip
+    # :id を :show にも使うように変更
+    @trip = Trip.find(params[:id])
+  end
+
   def trip_params
     params.require(:trip).permit(:title, :start_date, :end_date, :trip_type)
   end

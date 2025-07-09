@@ -4,6 +4,13 @@
     <%= link_to "新しい旅行を記録する", new_trip_path, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
   </div>
 
+  <%# 通知メッセージの表示エリア %>
+  <% if flash[:notice] %>
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+      <span class="block sm:inline"><%= flash[:notice] %></span>
+    </div>
+  <% end %>
+
   <div class="bg-white shadow-md rounded my-6">
     <table class="min-w-full table-auto">
       <thead class="bg-gray-200">
@@ -11,6 +18,7 @@
           <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-semibold text-gray-600 uppercase tracking-wider">タイトル</th>
           <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-semibold text-gray-600 uppercase tracking-wider">期間</th>
           <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-semibold text-gray-600 uppercase tracking-wider">タイプ</th>
+          <th class="px-6 py-3 border-b-2 border-gray-300"></th> <%# 操作ボタン用のヘッダーを追加 %>
         </tr>
       </thead>
       <tbody class="bg-white">
@@ -29,6 +37,12 @@
                 <%= trip.trip_type %>
               </span>
             </td>
+            <%# ↓↓↓↓ 操作ボタン用のセルを追加 ↓↓↓↓ %>
+            <td class="px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium">
+              <%= link_to '編集', edit_trip_path(trip), class: "text-indigo-600 hover:text-indigo-900" %>
+              <%= link_to '削除', trip_path(trip), data: { turbo_method: :delete, turbo_confirm: '本当にこの旅行の記録を削除しますか？' }, class: "text-red-600 hover:text-red-900 ml-4" %>
+            </td>
+            <%# ↑↑↑↑ ここまで ↑↑↑↑ %>
           </tr>
         <% end %>
       </tbody>

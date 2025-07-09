@@ -1,24 +1,31 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "App" %></title>
+    <title>WanderpathJourney</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= yield :head %>
+    <%# --- ここから追加 --- %>
+    <%# TurboやStimulusなどのJavaScriptを読み込むための最も重要なタグ %>
+    <%= javascript_importmap_tags %>
+    <%# --- ここまで追加 --- %>
 
+    <%# Tailwind CSSを読み込むためのタグ %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%# application.cssを読み込むためのタグ %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+    <%# PWA関連のタグ (ユーザーのものを維持) %>
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
-    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   </head>
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
+  <body class="bg-gray-100">
+    <%# メインコンテンツを表示するエリア %>
+    <main class="container mx-auto mt-8 px-5">
       <%= yield %>
     </main>
   </body>
