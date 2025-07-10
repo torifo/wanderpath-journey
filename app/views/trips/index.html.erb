@@ -1,48 +1,81 @@
 <div class="container mx-auto px-4 py-8">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold">旅行一覧</h1>
-    <%= link_to "新しい旅行を記録する", new_trip_path, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+    <h1 class="text-3xl font-bold text-gray-800">旅行一覧</h1>
+    <%= link_to "新しい旅行を記録する", new_trip_path, class: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105" %>
   </div>
 
   <%# 通知メッセージの表示エリア %>
   <% if flash[:notice] %>
-    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-      <span class="block sm:inline"><%= flash[:notice] %></span>
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+      <p><%= flash[:notice] %></p>
     </div>
   <% end %>
 
-  <div class="bg-white shadow-md rounded my-6">
+  <%# フィルターフォーム %>
+  <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+    <h3 class="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">絞り込み検索</h3>
+    <%= form_with(url: trips_path, method: :get, class: "space-y-4") do |form| %>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+        <div>
+          <%= form.label :year, "年", class: "block text-gray-700 text-sm font-bold mb-2" %>
+          <%= form.select :year, 
+                          options_for_select(@available_years, params[:year]), 
+                          { include_blank: 'すべての年' }, 
+                          class: "shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        </div>
+        <div>
+          <%= form.label :month, "月", class: "block text-gray-700 text-sm font-bold mb-2" %>
+          <%= form.select :month, 
+                          options_for_select((1..12).map { |m| ["#{m}月", m] }, params[:month]), 
+                          { include_blank: 'すべての月' }, 
+                          class: "shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        </div>
+        <div>
+          <%= form.label :trip_type, "タイプ", class: "block text-gray-700 text-sm font-bold mb-2" %>
+          <%= form.select :trip_type, 
+                          options_for_select(@available_trip_types, params[:trip_type]), 
+                          { include_blank: 'すべて' }, 
+                          class: "shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-4 space-x-3">
+        <%= link_to "リセット", trips_path, class: "bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg" %>
+        <%= form.submit "絞り込む", class: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="overflow-x-auto bg-white shadow-lg rounded-lg">
     <table class="min-w-full table-auto">
-      <thead class="bg-gray-200">
+      <thead class="bg-gray-50 border-b-2 border-gray-200">
         <tr>
-          <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-semibold text-gray-600 uppercase tracking-wider">タイトル</th>
-          <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-semibold text-gray-600 uppercase tracking-wider">期間</th>
-          <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-semibold text-gray-600 uppercase tracking-wider">タイプ</th>
-          <th class="px-6 py-3 border-b-2 border-gray-300"></th> <%# 操作ボタン用のヘッダーを追加 %>
+          <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">タイトル</th>
+          <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">期間</th>
+          <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">タイプ</th>
+          <th class="px-6 py-3"></th>
         </tr>
       </thead>
-      <tbody class="bg-white">
+      <tbody class="divide-y divide-gray-200">
         <% @trips.each do |trip| %>
-          <tr>
-            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-              <div class="text-sm leading-5 text-gray-900"><%= trip.title %></div>
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900"><%= trip.title %></div>
             </td>
-            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-              <div class="text-sm leading-5 text-gray-900">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-500">
                 <%= trip.start_date&.strftime('%Y/%m/%d') %> ~ <%= trip.end_date&.strftime('%Y/%m/%d') %>
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                 <%= trip.trip_type %>
               </span>
             </td>
-            <%# ↓↓↓↓ 操作ボタン用のセルを追加 ↓↓↓↓ %>
-            <td class="px-6 py-4 whitespace-no-wrap text-right border-b border-gray-200 text-sm leading-5 font-medium">
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
               <%= link_to '編集', edit_trip_path(trip), class: "text-indigo-600 hover:text-indigo-900" %>
-              <%= link_to '削除', trip_path(trip), data: { turbo_method: :delete, turbo_confirm: '本当にこの旅行の記録を削除しますか？' }, class: "text-red-600 hover:text-red-900 ml-4" %>
+              <%= button_to '削除', trip_path(trip), method: :delete, form: { data: { turbo_confirm: '本当にこの旅行の記録を削除しますか？' } }, class: "text-red-600 hover:text-red-900 inline" %>
             </td>
-            <%# ↑↑↑↑ ここまで ↑↑↑↑ %>
           </tr>
         <% end %>
       </tbody>

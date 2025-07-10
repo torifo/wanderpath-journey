@@ -1,14 +1,31 @@
 class TripsController < ApplicationController
-  # before_actionに :show を追加
   before_action :set_trip, only: [:show, :edit, :update, :destroy]
 
   def index
-    @trips = Trip.all.order(start_date: :desc)
+    # --- フィルター選択肢の動的生成 ---
+    # データベースに存在する旅行の年を重複なく取得し、降順で並べる
+    @available_years = Trip.pluck(:start_date).compact.map(&:year).uniq.sort.reverse
+    # データベースに存在する旅行タイプを重複なく取得し、並べる
+    @available_trip_types = Trip.pluck(:trip_type).uniq.sort
+
+    # --- フィルター処理 ---
+    @trips = Trip.all
+    if params[:trip_type].present?
+      @trips = @trips.where(trip_type: params[:trip_type])
+    end
+    if params[:year].present?
+      # extract関数を使って、PostgreSQLで年を抽出して比較
+      @trips = @trips.where("extract(year from start_date) = ?", params[:year])
+    end
+    if params[:month].present?
+      # extract関数を使って、PostgreSQLで月を抽出して比較
+      @trips = @trips.where("extract(month from start_date) = ?", params[:month])
+    end
+
+    @trips = @trips.order(start_date: :desc)
   end
 
-  # 詳細ページを表示するためのアクションを追加
   def show
-    # before_actionで@tripがセットされるので、中身は空でOK
   end
 
   def new
@@ -43,7 +60,6 @@ class TripsController < ApplicationController
   private
 
   def set_trip
-    # :id を :show にも使うように変更
     @trip = Trip.find(params[:id])
   end
 
