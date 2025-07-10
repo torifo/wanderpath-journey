@@ -7,7 +7,10 @@ Rails.application.routes.draw do
 
   # Tripリソースの基本的なルーティングをまとめて定義
   # これにより /trips, /trips/new, /trips/:id などが利用可能になる
-  resources :trips
+  resources :trips do
+    # /trips/:id/map_data というURLでアクセスできるようにする
+    get :map_data, on: :member
+  end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

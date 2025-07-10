@@ -1,5 +1,5 @@
 <div class="container mx-auto px-4 py-8">
-    <%# --- ヘッダー --- %>
+  <%# --- ヘッダー --- %>
     <div class="bg-white shadow-lg rounded-lg p-6 sm:p-8 mb-8">
         <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
@@ -14,9 +14,18 @@
         </div>
     </div>
 
+    <%# --- 地図コンテナを追加 --- %>
+    <div class="bg-white shadow-lg rounded-lg mb-8" 
+        data-controller="map" 
+        data-map-url-value="<%= map_data_trip_path(@trip) %>">
+        <h2 class="text-2xl font-bold text-gray-700 p-6 border-b">旅のルート</h2>
+        <div data-map-target="container" style="height: 400px;"></div>
+    </div>
+
+
     <%# --- 旅程 --- %>
     <div class="space-y-6">
-        <h2 class="text-2xl font-bold text-gray-700">旅程</h2>
+        <h2 class="text-2xl font-bold text-gray-700">旅程詳細</h2>
         
         <% if @legs_by_segment.empty? %>
         <div class="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">

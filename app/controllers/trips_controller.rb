@@ -1,5 +1,5 @@
 class TripsController < ApplicationController
-  before_action :set_trip, only: [:show, :edit, :update, :destroy]
+  before_action :set_trip, only: [:show, :edit, :update, :destroy, :map_data]
 
   def index
     @available_years = Trip.pluck(:start_date).compact.map(&:year).uniq.sort.reverse
@@ -49,6 +49,43 @@ class TripsController < ApplicationController
   def destroy
     @trip.destroy
     redirect_to trips_path, notice: "旅行の記録を削除しました。", status: :see_other
+  end
+
+  # 地図表示用のGeoJSONデータを返すAPIアクション
+  def map_data
+    # この旅行に関連するスポットをすべて取得
+    spots = @trip.legs.flat_map { |leg| [leg.origin_spot, leg.destination_spot] }.uniq
+
+    # スポット（点）のGeoJSONフィーチャーを作成
+    spot_features = spots.map do |spot|
+      {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [spot.location.lon, spot.location.lat]
+        },
+        properties: {
+          name: spot.name,
+          spot_type: spot.spot_type
+        }
+      }
+    end
+
+    # ルート（線）のGeoJSONフィーチャーを作成
+    line_coordinates = spots.map { |spot| [spot.location.lon, spot.location.lat] }
+    line_feature = {
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: line_coordinates
+      }
+    }
+
+    # すべてのフィーチャーをまとめたFeatureCollectionをJSONとして返す
+    render json: {
+      type: 'FeatureCollection',
+      features: spot_features + [line_feature]
+    }
   end
 
   private
