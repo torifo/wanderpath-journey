@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_06_031406) do
+ActiveRecord::Schema[7.2].define(version: 2025_07_10_075527) do
   create_schema "tiger"
   create_schema "tiger_data"
   create_schema "topology"
@@ -329,6 +329,21 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_06_031406) do
     t.text "short_desc"
   end
 
+  create_table "legs", force: :cascade do |t|
+    t.datetime "departure_time"
+    t.datetime "arrival_time"
+    t.bigint "trip_id", null: false
+    t.bigint "transportation_id", null: false
+    t.bigint "origin_spot_id", null: false
+    t.bigint "destination_spot_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["destination_spot_id"], name: "index_legs_on_destination_spot_id"
+    t.index ["origin_spot_id"], name: "index_legs_on_origin_spot_id"
+    t.index ["transportation_id"], name: "index_legs_on_transportation_id"
+    t.index ["trip_id"], name: "index_legs_on_trip_id"
+  end
+
   create_table "loader_lookuptables", primary_key: "lookup_name", id: { type: :text, comment: "This is the table name to inherit from and suffix of resulting output table -- how the table will be named --  edges here would mean -- ma_edges , pa_edges etc. except in the case of national tables. national level tables have no prefix" }, force: :cascade do |t|
     t.integer "process_order", default: 1000, null: false
     t.text "table_name", comment: "suffix of the tables to load e.g.  edges would load all tables like *edges.dbf(shp)  -- so tl_2010_42129_edges.dbf .  "
@@ -544,6 +559,13 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_06_031406) do
     t.check_constraint "st_srid(the_geom) = 4269", name: "enforce_srid_geom"
   end
 
+  create_table "transportations", force: :cascade do |t|
+    t.string "category", null: false
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "trips", force: :cascade do |t|
     t.string "title", null: false
     t.date "start_date"
@@ -618,6 +640,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_06_031406) do
     t.string "place", limit: 100, null: false
   end
 
+  add_foreign_key "legs", "spots", column: "destination_spot_id"
+  add_foreign_key "legs", "spots", column: "origin_spot_id"
+  add_foreign_key "legs", "transportations"
+  add_foreign_key "legs", "trips"
   add_foreign_key "posts", "spots"
   add_foreign_key "spots", "trips"
 end
