@@ -74,3 +74,8 @@ Docker環境の環境変数を読み込むように設定済みです。
 - データベースの作成: `docker compose run --rm web rails db:create` (初回のみ)
 - マイグレーションの実行: `docker compose run --rm web rails db:migrate`
 - マイグレーションの取り消し: `docker compose run --rm web rails db:rollback`
+
+# ローカルデータベースダンプ
+\copy ( SELECT DISTINCT g.group_name, l.date FROM yarikuri_list l JOIN group_list g ON l.group_id = g.id ORDER BY g.group_name, l.date ) TO './trips_datas.csv' WITH CSV HEADER;
+## パス
+C:\Users\Swimm\develop\Web_Page\Megurium\wanderpath-journey\lib\data
