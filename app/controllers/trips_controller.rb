@@ -2,30 +2,24 @@ class TripsController < ApplicationController
   before_action :set_trip, only: [:show, :edit, :update, :destroy]
 
   def index
-    # --- フィルター選択肢の動的生成 ---
-    # データベースに存在する旅行の年を重複なく取得し、降順で並べる
     @available_years = Trip.pluck(:start_date).compact.map(&:year).uniq.sort.reverse
-    # データベースに存在する旅行タイプを重複なく取得し、並べる
     @available_trip_types = Trip.pluck(:trip_type).uniq.sort
-
-    # --- フィルター処理 ---
     @trips = Trip.all
     if params[:trip_type].present?
       @trips = @trips.where(trip_type: params[:trip_type])
     end
     if params[:year].present?
-      # extract関数を使って、PostgreSQLで年を抽出して比較
       @trips = @trips.where("extract(year from start_date) = ?", params[:year])
     end
     if params[:month].present?
-      # extract関数を使って、PostgreSQLで月を抽出して比較
       @trips = @trips.where("extract(month from start_date) = ?", params[:month])
     end
-
     @trips = @trips.order(start_date: :desc)
   end
 
   def show
+    # @tripに紐づくLegを行程(segment)ごとにグループ化し、出発時刻順で並べる
+    @legs_by_segment = @trip.legs.order(:departure_time).group_by(&:segment)
   end
 
   def new

@@ -6,26 +6,16 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%# --- ここから追加 --- %>
-    <%# TurboやStimulusなどのJavaScriptを読み込むための最も重要なタグ %>
-    <%= javascript_importmap_tags %>
-    <%# --- ここまで追加 --- %>
-
-    <%# Tailwind CSSを読み込むためのタグ %>
+    <%# Tailwind CSSのビルドファイルを読み込む %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
-    <%# application.cssを読み込むためのタグ %>
+    <%# application.cssを読み込む %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-
-    <%# PWA関連のタグ (ユーザーのものを維持) %>
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <%# JavaScript(Turbo, Stimulus)を読み込む %>
+    <%= javascript_importmap_tags %>
   </head>
 
   <body class="bg-gray-100">
-    <%# メインコンテンツを表示するエリア %>
-    <main class="container mx-auto mt-8 px-5">
+    <main class="container mx-auto mt-8 px-4">
       <%= yield %>
     </main>
   </body>

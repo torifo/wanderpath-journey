@@ -1,31 +1,62 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# データベースをクリーンな状態にするため、関連性の深いモデルから順に削除
+puts "既存のデータを削除しています..."
+Leg.destroy_all
+Transportation.destroy_all
+Spot.destroy_all
+Trip.destroy_all
 
-# Tripテーブルにデータが1件も存在しない場合のみ、以下の処理を実行する
-if Trip.count.zero?
-  puts "テストデータの作成を開始します..."
+puts "テストデータの作成を開始します..."
 
-  trips_data = [
-    { title: "夏の沖縄旅行", start_date: "2025-08-10", end_date: "2025-08-15", trip_type: "長期旅行" },
-    { title: "京都紅葉狩り", start_date: "2025-11-22", end_date: "2025-11-24", trip_type: "短期旅行" },
-    { title: "箱根温泉ぷらっと旅", start_date: "2025-02-01", end_date: "2025-02-01", trip_type: "ぷらっと" },
-    { title: "鎌倉あじさい散策", start_date: "2024-06-15", end_date: "2024-06-15", trip_type: "日帰り" },
-    { title: "冬の北海道スキー旅行", start_date: "2024-01-20", end_date: "2024-01-25", trip_type: "長期旅行" },
-    { title: "金沢グルメ旅", start_date: "2024-09-14", end_date: "2024-09-16", trip_type: "短期旅行" }
-  ]
+# 1. 移動手段のマスターデータを作成
+train = Transportation.create!(category: "電車", name: "JR中央線")
+shinkansen = Transportation.create!(category: "電車", name: "新幹線")
+bus = Transportation.create!(category: "バス", name: "高速バス")
+walk = Transportation.create!(category: "徒歩", name: "徒歩")
 
-  trips_data.each do |data|
-    Trip.create!(data)
-  end
+# 2. スポット（場所）のマスターデータを作成
+factory = RGeo::Geographic.spherical_factory(srid: 4326)
+tokyo_station = Spot.create!(name: "東京駅", prefecture: "東京都", location: factory.point(139.767125, 35.681236), spot_type: "destination")
+sendai_station = Spot.create!(name: "仙台駅", prefecture: "宮城県", location: factory.point(140.882463, 38.260146), spot_type: "destination")
+sano_sa = Spot.create!(name: "佐野SA", prefecture: "栃木県", location: factory.point(139.59393, 36.29773), spot_type: "waypoint")
 
-  puts "テストデータの作成が完了しました！"
-else
-  puts "すでにデータが存在するため、テストデータの作成をスキップしました。"
-end
+# 3. 旅行データを作成
+trip1 = Trip.create!(
+  title: "バスで行く仙台の旅",
+  start_date: "2025-08-20",
+  end_date: "2025-08-20",
+  trip_type: "日帰り"
+)
+
+# 4. 移動区間（Leg）データを作成
+puts "  - 移動区間を作成中..."
+# 1つ目の行程
+Leg.create!(
+  trip: trip1,
+  segment: "東京-仙台間", # 行程名を指定
+  origin_spot: tokyo_station,
+  destination_spot: sano_sa,
+  transportation: bus,
+  departure_time: Time.zone.parse("2025-08-20 08:00:00"),
+  arrival_time: Time.zone.parse("2025-08-20 09:30:00")
+)
+Leg.create!(
+  trip: trip1,
+  segment: "東京-仙台間", # 同じ行程名を指定
+  origin_spot: sano_sa,
+  destination_spot: sendai_station,
+  transportation: bus,
+  departure_time: Time.zone.parse("2025-08-20 09:45:00"),
+  arrival_time: Time.zone.parse("2025-08-20 12:30:00")
+)
+# 2つ目の行程
+Leg.create!(
+  trip: trip1,
+  segment: "仙台市内", # 別の行程名
+  origin_spot: sendai_station,
+  destination_spot: sendai_station, # 仮で同じにしておく
+  transportation: walk,
+  departure_time: Time.zone.parse("2025-08-20 13:00:00"),
+  arrival_time: Time.zone.parse("2025-08-20 13:15:00")
+)
+
+puts "テストデータの作成が完了しました！"

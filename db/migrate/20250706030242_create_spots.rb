@@ -1,5 +1,8 @@
 class CreateSpots < ActiveRecord::Migration[7.2]
   def change
+    # このマイグレーションを実行する前に、PostGIS拡張機能を有効にする
+    enable_extension 'postgis'
+
     create_table :spots do |t|
       t.string :name, null: false
       t.text :description
@@ -7,9 +10,7 @@ class CreateSpots < ActiveRecord::Migration[7.2]
 
       # PostGISのpoint型を使って、緯度経度の位置情報を保存するカラム
       t.st_point :location, geographic: true
-
-      t.references :trip, null: false, foreign_key: true
-
+      
       t.timestamps
     end
 
