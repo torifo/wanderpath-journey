@@ -7,116 +7,95 @@ on:
 
 jobs:
   scan_ruby:
+    name: "Scan Ruby" # ジョブ名を分かりやすく変更
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      # --- 権限付与ステップを追加 ---
+      - name: Set execute permissions for scripts
+        run: chmod +x bin/*
+      - name: Scan for common Rails security vulnerabilities
+        run: bin/brakeman --no-pager
 
-    # テスト実行時に使用するサービス（データベース）を定義
+  scan_js:
+    name: "Scan JavaScript" # ジョブ名を分かりやすく変更
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      # --- 権限付与ステップを追加 ---
+      - name: Set execute permissions for scripts
+        run: chmod +x bin/*
+      - name: Scan for security vulnerabilities in JavaScript dependencies
+        run: bin/importmap audit
+
+  lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      # --- 権限付与ステップを追加 ---
+      - name: Set execute permissions for scripts
+        run: chmod +x bin/*
+      - name: Lint code for consistent style
+        run: bin/rubocop -f github
+
+  test:
+    name: "Test"
+    runs-on: ubuntu-latest
+    # --- PostGISサービスを定義 ---
     services:
-      # 'postgres'という名前でPostGISコンテナを起動
       postgres:
-        image: postgis/postgis:13-3.1
+        image: postgis/postgis:13-3.1 # postgisイメージに変更
         env:
           POSTGRES_USER: rails
           POSTGRES_PASSWORD: password
           POSTGRES_DB: wanderpath_test
         ports:
           - 5432:5432
-        # ヘルスチェックを追加して、DBが完全に起動するまで待つ
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
+      # --- testジョブでは不要なため削除: Install packages ---
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: .ruby-version
           bundler-cache: true
-
-      - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager
-
-  scan_js:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bin/importmap audit
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Lint code for consistent style
-        run: bin/rubocop -f github
-
-  test:
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
-
-      # redis:
-      #   image: redis
-      #   ports:
-      #     - 6379:6379
-      #   options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
-
-    steps:
-      - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y google-chrome-stable curl libjemalloc2 libvips postgresql-client
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
+      # --- 権限付与ステップを追加 ---
       - name: Set execute permissions for scripts
         run: chmod +x bin/*
-
       - name: Run tests
         env:
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432
-          # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test test:system
-
-      - name: Keep screenshots from failed system tests
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: screenshots
-          path: ${{ github.workspace }}/tmp/screenshots
-          if-no-files-found: ignore
+          # --- サービスコンテナの情報を環境変数として渡す ---
+          DATABASE_HOST: localhost
+          DATABASE_USER: rails
+          DATABASE_PASSWORD: password
+          DATABASE_NAME: wanderpath_test
+        run: |
+          bundle exec rails db:create
+          bundle exec rails db:migrate
+          bundle exec rails test
