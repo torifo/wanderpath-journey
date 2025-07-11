@@ -48,18 +48,39 @@ export default class extends Controller {
     });
   }
 
+  // --- 新機能：都道府県が選択されたら地図を移動 ---
+  async panToPrefecture() {
+    const prefecture = this.prefectureSelectTarget.value;
+    if (!prefecture) return; // 何も選択されていなければ処理を中断
+
+    const endpoint = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=jp&state=${encodeURIComponent(prefecture)}`;
+
+    try {
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error('Network response was not ok.');
+      const results = await response.json();
+
+      if (results.length > 0) {
+        const bb = results[0].boundingbox; // [south, north, west, east]
+        const southWest = L.latLng(bb[0], bb[2]);
+        const northEast = L.latLng(bb[1], bb[3]);
+        const bounds = L.latLngBounds(southWest, northEast);
+        // 地図の表示範囲を、取得した都道府県の範囲に合わせる
+        this.map.fitBounds(bounds);
+      }
+    } catch (error) {
+      console.error("Prefecture geocoding error:", error);
+    }
+  }
+
   // 場所を検索する機能
   async search(event) {
     event.preventDefault();
     const placeName = this.searchInputTarget.value;
     if (placeName.length < 2) return;
-
-    // --- 都道府県の選択肢を取得 ---
-    const prefecture = this.prefectureSelectTarget.value;
     
-    // --- 都道府県名もクエリに含める ---
-    const fullQuery = prefecture ? `${prefecture} ${placeName}` : placeName;
-
+    const prefecture = this.prefectureSelectTarget.value;
+    const fullQuery = prefecture ? `${placeName}, ${prefecture}` : placeName;
     const endpoint = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=jp&q=${encodeURIComponent(fullQuery)}`;
 
     try {

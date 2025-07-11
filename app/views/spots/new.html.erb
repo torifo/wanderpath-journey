@@ -1,4 +1,4 @@
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto max-w-4xl px-4 py-8">
     <h1 class="text-3xl font-bold mb-6 text-gray-800">新しいスポットを追加</h1>
 
     <%= form_with(model: @spot, class: "space-y-6 bg-white shadow-lg rounded-lg p-6 sm:p-8", data: { controller: "spot-form" }) do |form| %>
@@ -13,12 +13,24 @@
         </div>
         <% end %>
 
-        <%# --- 地図検索・表示エリア --- %>
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-            <label for="map-search" class="block text-gray-700 text-sm font-bold mb-2">場所を検索</label>
+            <%= form.label :prefecture, "都道府県", class: "block text-gray-700 text-sm font-bold mb-2" %>
+            <%# --- data-actionを追加し、都道府県変更時に地図を移動させる --- %>
+            <%= form.select :prefecture, options_for_select(prefectures_for_select), { include_blank: '選択してください' }, { class: "shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500", data: { action: "change->spot-form#panToPrefecture", spot_form_target: "prefectureSelect" } } %>
+        </div>
+        <div>
+            <%= form.label :spot_type, "タイプ", class: "block text-gray-700 text-sm font-bold mb-2" %>
+            <%= form.select :spot_type, options_for_select([['目的地', 'destination'], ['経由地', 'waypoint']]), {}, class: "shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        </div>
+        </div>
+
+        <div class="space-y-4 pt-4 border-t">
+        <div>
+            <label for="map-search" class="block text-gray-700 text-sm font-bold mb-2">場所を検索 (都道府県を選択してから検索してください)</label>
             <div class="flex flex-col sm:flex-row gap-2">
-            <input type="text" id="map-search" placeholder="例: 東京タワー" data-spot-form-target="searchInput" class="shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <%# --- data-actionを追加し、Enterキーでも検索を実行 --- %>
+            <input type="text" id="map-search" placeholder="例: 東京タワー" data-spot-form-target="searchInput" data-action="keydown.enter->spot-form#search" class="shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <button type="button" data-action="click->spot-form#search" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">検索</button>
             </div>
         </div>
@@ -28,11 +40,10 @@
         </div>
         </div>
 
-        <%# --- 緯度・経度（ユーザーには見えない隠しフィールド） --- %>
         <%= form.hidden_field :lat, data: { spot_form_target: "latInput" } %>
         <%= form.hidden_field :lon, data: { spot_form_target: "lonInput" } %>
 
-        <div>
+        <div class="pt-4 border-t">
         <%= form.label :name, "名前 *", class: "block text-gray-700 text-sm font-bold mb-2" %>
         <%= form.text_field :name, required: true, class: "shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700" %>
         </div>
@@ -42,17 +53,6 @@
         <%= form.text_area :description, rows: 4, class: "shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700" %>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-            <%= form.label :prefecture, "都道府県", class: "block text-gray-700 text-sm font-bold mb-2" %>
-            <%= form.select :prefecture, options_for_select(prefectures_for_select), { include_blank: '選択してください' }, class: "shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700" %>
-        </div>
-        <div>
-            <%= form.label :spot_type, "タイプ", class: "block text-gray-700 text-sm font-bold mb-2" %>
-            <%= form.select :spot_type, options_for_select([['目的地', 'destination'], ['経由地', 'waypoint']]), {}, class: "shadow-sm border-gray-300 rounded-md w-full py-2 px-3 text-gray-700" %>
-        </div>
-        </div>
-
         <div class="flex items-center justify-end pt-4 space-x-4">
         <%= link_to "キャンセル", spots_path, class: "text-gray-600 hover:text-gray-800" %>
         <%= form.submit "作成する", class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md" %>
