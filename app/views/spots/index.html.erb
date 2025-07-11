@@ -1,0 +1,41 @@
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">スポット一覧</h1>
+        <%= link_to "新しいスポットを追加", new_spot_path, class: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" %>
+    </div>
+
+    <% if flash[:notice] %>
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+        <p><%= flash[:notice] %></p>
+        </div>
+    <% end %>
+
+    <div class="overflow-x-auto bg-white shadow-lg rounded-lg">
+        <table class="min-w-full table-auto">
+        <thead class="bg-gray-50 border-b-2 border-gray-200">
+            <tr>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">名前</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">都道府県</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">タイプ</th>
+            <th class="px-6 py-3"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            <% @spots.each do |spot| %>
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap"><%= spot.name %></td>
+                <td class="px-6 py-4 whitespace-nowrap"><%= spot.prefecture %></td>
+                <td class="px-6 py-4 whitespace-nowrap"><%= spot.spot_type == 'waypoint' ? '経由地' : '目的地' %></td>
+                <%# --- ボタンのレイアウトをflexboxで調整 --- %>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex justify-end items-center space-x-4">
+                    <%= link_to '編集', edit_spot_path(spot), class: "text-indigo-600 hover:text-indigo-900" %>
+                    <%= button_to '削除', spot_path(spot), method: :delete, form: { data: { turbo_confirm: '本当にこのスポットを削除しますか？' } }, class: "text-red-600 hover:text-red-900" %>
+                </div>
+                </td>
+            </tr>
+            <% end %>
+        </tbody>
+        </table>
+    </div>
+</div>

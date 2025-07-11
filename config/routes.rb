@@ -5,12 +5,15 @@ Rails.application.routes.draw do
   # ルートURL ("/") にアクセスしたら、TripsControllerのindexアクションを呼び出す
   root "trips#index"
 
-  # Tripリソースの基本的なルーティングをまとめて定義
-  # これにより /trips, /trips/new, /trips/:id などが利用可能になる
+  # Tripリソース
   resources :trips do
-    # /trips/:id/map_data というURLでアクセスできるようにする
     get :map_data, on: :member
+    # 旅行(Trip)に紐づく、移動区間(Leg)のリソース
+    resources :legs, only: [:new, :create, :edit, :update, :destroy]
   end
+
+  # スポット(Spot)は独立したマスターデータとして管理する
+  resources :spots, except: [:show]
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

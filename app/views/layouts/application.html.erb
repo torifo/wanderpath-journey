@@ -21,6 +21,20 @@
   </head>
 
   <body class="bg-gray-100">
+    <%# --- ここからナビゲーションバーを追加 --- %>
+    <nav class="bg-white shadow-md">
+      <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center py-4">
+          <%= link_to 'Wanderpath Journey', root_path, class: "text-xl font-bold text-gray-800" %>
+          <div class="space-x-4">
+            <%= link_to '旅行一覧', trips_path, class: "text-gray-600 hover:text-blue-500" %>
+            <%= link_to 'スポット管理', spots_path, class: "text-gray-600 hover:text-blue-500" %>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <%# --- ここまでナビゲーションバー --- %>
+
     <main class="container mx-auto mt-8 px-4">
       <%= yield %>
     </main>
