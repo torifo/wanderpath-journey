@@ -7,7 +7,7 @@ on:
 
 jobs:
   scan_ruby:
-    name: "Scan Ruby" # ジョブ名を分かりやすく変更
+    name: "Scan Ruby"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
         run: bin/brakeman --no-pager
 
   scan_js:
-    name: "Scan JavaScript" # ジョブ名を分かりやすく変更
+    name: "Scan JavaScript"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -76,7 +76,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      # --- testジョブでは不要なため削除: Install packages ---
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Set up Ruby
