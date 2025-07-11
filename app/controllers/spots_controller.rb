@@ -3,7 +3,8 @@ class SpotsController < ApplicationController
 
     # GET /spots
     def index
-        @spots = Spot.all.order(:name)
+        # 関連する旅行データを事前に読み込む(N+1問題対策)
+        @spots = Spot.includes(:trips_as_origin, :trips_as_destination).order(:name)
     end
 
     # GET /spots/new

@@ -18,8 +18,19 @@ class TripsController < ApplicationController
   end
 
   def show
-    # @tripに紐づくLegを行程(segment)ごとにグループ化し、出発時刻順で並べる
-    @legs_by_segment = @trip.legs.order(:departure_time).group_by(&:segment)
+    # 関連データを事前に読み込み、N+1問題を解消
+    @legs_by_segment = @trip.legs.includes(:origin_spot, :destination_spot, :transportation).order(:departure_time).group_by(&:segment)
+    
+    # --- ここから修正 ---
+    # この旅行に含まれる全てのユニークなスポットを取得
+    all_spots = @trip.spots.uniq
+    
+    # 「目的地」のリストを作成（"自宅"は除外）
+    @destination_spots = all_spots.filter { |spot| spot.spot_type == 'destination' && spot.name != '自宅' }
+    
+    # 「経由地」のリストを作成（"自宅"は除外）
+    @waypoint_spots = all_spots.filter { |spot| spot.spot_type == 'waypoint' && spot.name != '自宅' }
+    # --- ここまで修正 ---
   end
 
   def new

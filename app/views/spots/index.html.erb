@@ -1,7 +1,7 @@
 <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">スポット一覧</h1>
-        <%= link_to "新しいスポットを追加", new_spot_path, class: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" %>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h1 class="text-3xl font-bold text-gray-800">スポット管理</h1>
+        <%= link_to "新しいスポットを追加", new_spot_path, class: "bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md" %>
     </div>
 
     <% if flash[:notice] %>
@@ -15,18 +15,25 @@
         <thead class="bg-gray-50 border-b-2 border-gray-200">
             <tr>
             <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">名前</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">都道府県</th>
-            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">タイプ</th>
+            <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">関連する旅行</th>
             <th class="px-6 py-3"></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
             <% @spots.each do |spot| %>
             <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap"><%= spot.name %></td>
-                <td class="px-6 py-4 whitespace-nowrap"><%= spot.prefecture %></td>
-                <td class="px-6 py-4 whitespace-nowrap"><%= spot.spot_type == 'waypoint' ? '経由地' : '目的地' %></td>
-                <%# --- ボタンのレイアウトをflexboxで調整 --- %>
+                <td class="px-6 py-4 whitespace-nowrap">
+                <div class="font-medium text-gray-900"><%= spot.name %></div>
+                <div class="text-sm text-gray-500"><%= spot.prefecture %></div>
+                </td>
+                <td class="px-6 py-4">
+                <%# --- 関連する旅行へのリンクを表示 --- %>
+                <div class="flex flex-wrap gap-2">
+                    <% spot.trips.each do |trip| %>
+                    <%= link_to trip.title, trip_path(trip), class: "text-sm text-blue-600 hover:text-blue-800 hover:underline bg-blue-100 px-2 py-1 rounded-full" %>
+                    <% end %>
+                </div>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex justify-end items-center space-x-4">
                     <%= link_to '編集', edit_spot_path(spot), class: "text-indigo-600 hover:text-indigo-900" %>
