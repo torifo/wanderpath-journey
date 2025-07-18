@@ -4,8 +4,20 @@ Leg.destroy_all
 Transportation.destroy_all
 Spot.destroy_all
 Trip.destroy_all
+User.destroy_all
 
 puts "テストデータの作成を開始します..."
+
+# 管理者ユーザーの作成
+admin = User.create!(
+  email: "admin@example.com",
+  username: "admin",
+  password: "password",
+  password_confirmation: "password",
+  admin: true
+)
+
+puts "  - 管理者ユーザーを作成しました"
 
 # 1. 移動手段のマスターデータを作成
 train = Transportation.create!(category: "電車", name: "JR中央線")
@@ -24,7 +36,8 @@ trip1 = Trip.create!(
   title: "バスで行く仙台の旅",
   start_date: "2025-08-20",
   end_date: "2025-08-20",
-  trip_type: "日帰り"
+  trip_type: "日帰り",
+  user: admin  # 管理者ユーザーに関連付け
 )
 
 # 4. 移動区間（Leg）データを作成

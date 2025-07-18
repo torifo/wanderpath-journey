@@ -58,4 +58,8 @@ group :test do
 end
 
 gem "tzinfo-data"
-gem "tailwindcss-rails" 
+gem "tailwindcss-rails"
+gem "devise"
+gem "devise-jwt"
+gem "rack-cors"
+gem "jsonapi-serializer"

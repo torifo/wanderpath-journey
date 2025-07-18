@@ -7,10 +7,13 @@
     <%= csp_meta_tag %>
 
     <%# --- 読み込み順を修正 --- %>
-    <%# 1. LeafletのCSSを先に読み込む %>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
+    <%# 1. LeafletのCSSのみCDNから読み込む（JSはimportmapを使用） %>
+    <%# Deviseページでは不要なので条件分岐 %>
+    <% unless devise_controller? %>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+       crossorigin=""/>
+    <% end %>
     
     <%# 2. アプリケーションのCSS %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
@@ -25,15 +28,35 @@
     <nav class="bg-white shadow-md">
       <div class="container mx-auto px-4">
         <div class="flex justify-between items-center py-4">
-          <%= link_to 'Wanderpath Journey', root_path, class: "text-xl font-bold text-gray-800" %>
+          <%= link_to 'Wanderpath Journey', user_signed_in? ? home_path : root_path, class: "text-xl font-bold text-gray-800" %>
           <div class="space-x-4">
-            <%= link_to '旅行一覧', trips_path, class: "text-gray-600 hover:text-blue-500" %>
-            <%= link_to 'スポット管理', spots_path, class: "text-gray-600 hover:text-blue-500" %>
+            <% if user_signed_in? %>
+              <%= link_to '旅行一覧', trips_path, class: "text-gray-600 hover:text-blue-500" %>
+              <%= link_to 'スポット管理', spots_path, class: "text-gray-600 hover:text-blue-500" %>
+              <%= link_to 'ログアウト', destroy_user_session_path, data: { turbo_method: :delete }, class: "text-gray-600 hover:text-blue-500" %>
+            <% else %>
+              <%= link_to 'ログイン', new_user_session_path, class: "text-gray-600 hover:text-blue-500" %>
+              <%= link_to '新規登録', new_user_registration_path, class: "text-gray-600 hover:text-blue-500" %>
+            <% end %>
           </div>
         </div>
       </div>
     </nav>
     <%# --- ここまでナビゲーションバー --- %>
+
+    <!-- Deviseのフラッシュメッセージ -->
+    <div class="container mx-auto px-4 mt-4">
+      <% if notice %>
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
+          <p><%= notice %></p>
+        </div>
+      <% end %>
+      <% if alert %>
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+          <p><%= alert %></p>
+        </div>
+      <% end %>
+    </div>
 
     <main class="container mx-auto mt-8 px-4">
       <%= yield %>

@@ -3,8 +3,13 @@ class SpotsController < ApplicationController
 
     # GET /spots
     def index
+        # 現在のユーザーに関連するスポットのみを取得
+        # ユーザーの旅行に関連するスポットを取得
+        user_trip_ids = current_user.trips.pluck(:id)
+        user_spot_ids = Leg.where(trip_id: user_trip_ids).pluck(:origin_spot_id, :destination_spot_id).flatten.uniq
+        
         # 関連する旅行データを事前に読み込む(N+1問題対策)
-        @spots = Spot.includes(:trips_as_origin, :trips_as_destination).order(:name)
+        @spots = Spot.where(id: user_spot_ids).includes(:trips_as_origin, :trips_as_destination).order(:name)
     end
 
     # GET /spots/new

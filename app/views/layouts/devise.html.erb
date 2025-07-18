@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja" class="h-full">
+  <head>
+    <title>ログイン - WanderpathJourney</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%# Leaflet CSS（マップ機能用） %>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+    <%# カスタムスタイル %>
+    <style>
+      /* グラデーション背景 */
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+      }
+      
+      @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      
+      /* カードスタイル（ガラスモーフィズム） */
+      .auth-card {
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95) !important;
+      }
+      
+      .auth-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      }
+      
+      /* ボタンアニメーション */
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 15px 35px -5px rgba(102, 126, 234, 0.4);
+      }
+      
+      .btn-primary:active {
+        transform: scale(0.98);
+      }
+
+      /* パーティクル背景 */
+      .particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      
+      .particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 20s infinite linear;
+      }
+      
+      @keyframes float {
+        0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+      }
+    </style>
+
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="h-full gradient-bg relative overflow-hidden">
+    <%# パーティクル背景 %>
+    <div class="particles">
+      <% 20.times do |i| %>
+        <div class="particle" style="
+          width: <%= rand(4..12) %>px;
+          height: <%= rand(4..12) %>px;
+          left: <%= rand(0..100) %>%;
+          animation-delay: <%= rand(0..20) %>s;
+          animation-duration: <%= rand(15..25) %>s;
+        "></div>
+      <% end %>
+    </div>
+
+    <%# メインコンテナ %>
+    <div class="min-h-screen flex items-center justify-center py-12 px-6 sm:px-8 lg:px-12 relative z-10">
+      <div class="max-w-md w-full mx-auto space-y-8">
+        <%# ヘッダー %>
+        <div class="text-center">
+          <h1 class="text-4xl font-bold text-white mb-2 drop-shadow-lg">
+            Wanderpath Journey
+          </h1>
+          <p class="text-lg text-white/80 drop-shadow">
+            あなたの旅の軌跡をより鮮明に可視化しよう！
+          </p>
+        </div>
+
+        <%# フラッシュメッセージ %>
+        <div class="space-y-4">
+          <% if notice %>
+            <div class="bg-emerald-500/90 backdrop-blur-sm border border-emerald-400/50 text-white p-4 rounded-xl shadow-lg" role="alert">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <p class="font-medium"><%= notice %></p>
+              </div>
+            </div>
+          <% end %>
+          <% if alert %>
+            <div class="bg-red-500/90 backdrop-blur-sm border border-red-400/50 text-white p-4 rounded-xl shadow-lg" role="alert">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <p class="font-medium"><%= alert %></p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <%# メインコンテンツカード %>
+        <div class="auth-card rounded-2xl shadow-2xl px-12 py-10 border border-white/20">
+          <%= yield %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
