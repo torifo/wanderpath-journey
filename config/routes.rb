@@ -2,11 +2,13 @@ Rails.application.routes.draw do
   # API Routes
   namespace :api do
     namespace :v1 do
-      # Devise JWT Authentication
-      devise_for :users, controllers: {
-        sessions: 'api/v1/auth/sessions',
-        registrations: 'api/v1/auth/registrations'
-      }
+      # Custom Authentication API Routes
+      namespace :auth do
+        post :login, to: 'sessions#create'
+        delete :logout, to: 'sessions#destroy'
+        post :signup, to: 'sessions#signup'
+        get :me, to: 'sessions#me'
+      end
       
       # API Resources
       resources :trips do

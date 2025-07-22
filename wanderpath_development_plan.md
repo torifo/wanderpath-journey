@@ -109,7 +109,103 @@
 - **デバイス対応**: すべてのデバイスサイズで最適な表示を実現
 - **ブランド力**: 旅行アプリらしい洗練されたビジュアルアイデンティティを確立
 
+## フェーズ2.5：React移行プロジェクト (実装中 - 2025年7月19日)
+### 目標: Rails ERBからReact + Rails APIへの近代的なアーキテクチャ移行
+
+### ステップ2.5.1：Rails API バックエンドの実装 ✅
+#### 完了項目 (2025年7月19日):
+- **API アーキテクチャ設計**:
+  - Rails 7.2.2 API モード設定
+  - Devise JWT認証システム統合 (`devise-jwt` gem)
+  - CORS設定 (`rack-cors` gem) for React frontend連携
+  - API versioning (v1) 構造実装
+
+- **認証システム API化**:
+  - JWT トークンベース認証
+  - `app/controllers/api/v1/auth/sessions_controller.rb` - ログイン/ログアウトAPI
+  - `app/controllers/api/v1/base_controller.rb` - 共通API認証ベース
+  - `config/initializers/devise.rb` - JWT設定とトークン管理
+
+- **RESTful API エンドポイント**:
+  - `app/controllers/api/v1/trips_controller.rb` - 旅行データCRUD API
+  - `app/serializers/*.rb` - JSONAPI::Serializer による構造化レスポンス
+  - GeoJSON対応マップデータAPI
+
+### ステップ2.5.2：React フロントエンド基盤 ✅
+#### 完了項目 (2025年7月19日):
+- **React プロジェクト構成**:
+  - React 19.1.0 + TypeScript 5.8.3
+  - Vite 7.0.5 (次世代高速ビルドツール)
+  - TailwindCSS 3.4.0 (モダンCSS framework)
+  - React Router DOM 7.7.0 (SPAルーティング)
+
+- **プロジェクト構造**:
+  ```
+  frontend/
+  ├── src/
+  │   ├── components/          # UIコンポーネント
+  │   │   ├── auth/           # 認証関連コンポーネント
+  │   │   │   ├── AuthLayout.tsx      # 認証レイアウト
+  │   │   │   ├── LoginForm.tsx       # ログインフォーム
+  │   │   │   └── SignupForm.tsx      # 新規登録フォーム
+  │   │   └── common/         # 共通コンポーネント
+  │   │       └── ParticleBackground.tsx # パーティクル背景エフェクト
+  │   ├── context/            # React Context
+  │   │   └── AuthContext.tsx # 認証状態管理
+  │   ├── pages/              # ページコンポーネント
+  │   │   ├── AuthPage.tsx    # 認証ページ
+  │   │   └── DashboardPage.tsx # ダッシュボード
+  │   ├── services/           # API通信レイヤー
+  │   │   ├── api.ts          # Axios設定・インターセプター
+  │   │   └── authService.ts  # 認証API通信
+  │   └── types/              # TypeScript型定義
+  │       └── auth.ts         # 認証関連型定義
+  ```
+
+- **技術スタック詳細**:
+  - **State Management**: React Context API + useReducer
+  - **HTTP Client**: Axios with JWT interceptors
+  - **Styling**: TailwindCSS + Custom CSS animations
+  - **Type Safety**: TypeScript strict mode
+  - **Build Tool**: Vite (ESModule native, HMR)
+
+### ステップ2.5.3：現代的なUI/UX実装 ✅
+#### 完了項目 (2025年7月19日):
+- **デザインシステム継承**:
+  - Rails版のグラスモーフィズム効果をReactで再実装
+  - パーティクル背景アニメーション (Canvas API)
+  - レスポンシブデザイン完全対応
+
+- **認証フロー**:
+  - Protected Routes (認証ガード)
+  - Public Routes (認証済みリダイレクト)
+  - エラーハンドリング・ローディング状態
+  - パスワード強度表示・バリデーション
+
+### ステップ2.5.4：統合と動作確認 (進行中)
+#### 現在の作業項目:
+- [x] TailwindCSS設定問題の解決
+- [ ] React開発サーバー動作確認
+- [ ] 認証フロー統合テスト
+- [ ] Rails API ↔ React frontend 通信テスト
+
+### 技術的課題と解決状況:
+- **TailwindCSS v4 → v3 ダウングレード**: v4の不安定性によりv3.4.0へ変更 ✅
+- **Devise JWT設定**: credentials.yml 参照エラー修正 ✅
+- **PostCSS設定**: TailwindCSS適切なプラグイン設定 ✅
+
+### 移行後のアーキテクチャ特徴:
+1. **フロントエンド・バックエンド分離**: SPAとAPIの明確な分離
+2. **スケーラビリティ**: 独立したスケーリングとデプロイ
+3. **開発効率**: HMR、TypeScript、モダンツールチェーン
+4. **ユーザーエクスペリエンス**: シームレスなSPA navigation
+5. **保守性**: コンポーネントベース設計、型安全性
+
 ### 今後の展開
 1. **即時デプロイ**: 現在の状態で開発者専用として運用開始
-2. **フェーズ2実装**: 一般ユーザー対応機能の段階的実装
-3. **段階的公開**: 機能追加と並行して、段階的に一般ユーザーへの公開を進める
+2. **React移行完了**: 認証・旅行管理・マップ機能の完全移行
+3. **フェーズ2実装**: 一般ユーザー対応機能の段階的実装
+4. **段階的公開**: 機能追加と並行して、段階的に一般ユーザーへの公開を進める
+
+# key
+55018519306eea0a5b1b2d4d11b24d22f8d5b44eeb56bd1551a9d0f6ce6ed722fb47536fc440c9056738503005ad1fffdd3fd53fe1e44be422df1a31196f0e12

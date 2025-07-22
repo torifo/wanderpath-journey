@@ -8,15 +8,26 @@ class Api::V1::BaseController < ActionController::API
   private
   
   def authenticate_user!
-    if request.headers['Authorization'].present?
-      authenticate_or_request_with_http_token do |token|
-        jwt_payload = JWT.decode(token, Rails.application.secret_key_base).first
-        @current_user_id = jwt_payload['user_id']
-      rescue JWT::ExpiredSignature, JWT::VerificationError, JWT::DecodeError
-        head :unauthorized
-      end
-    else
+    unless request.headers['Authorization'].present?
       head :unauthorized
+      return
+    end
+
+    begin
+      token = request.headers['Authorization'].split(' ').last
+      secret_key = Rails.application.credentials.dig(:devise, :jwt_secret_key) || Rails.application.secret_key_base
+      jwt_payload = JWT.decode(token, secret_key).first
+      @current_user_id = jwt_payload['user_id']
+      
+      # ユーザーが実際に存在するかも確認
+      unless User.exists?(@current_user_id)
+        head :unauthorized
+        return
+      end
+    rescue JWT::ExpiredSignature, JWT::VerificationError, JWT::DecodeError => e
+      Rails.logger.error "JWT認証エラー: #{e.message}"
+      head :unauthorized
+      return
     end
   end
   

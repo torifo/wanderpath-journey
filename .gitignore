@@ -38,3 +38,14 @@
 !/app/assets/builds/.keep
 
 .github/workflows/ci.yml
+
+# VPS deployment files
+docker-compose.prod.yml
+.env.prod
+.env.production
+config/database.prod.yml
+config/credentials.prod.yml.enc
+
+# Frontend build artifacts
+frontend/dist
+frontend/node_modules

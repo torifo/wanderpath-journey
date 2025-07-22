@@ -1,17 +1,31 @@
-# Be sure to restart your server when you modify this file.
-
-# Avoid CORS issues when API is called from the frontend app.
-# Handle Cross-Origin Resource Sharing (CORS) in order to accept cross-origin AJAX requests.
-
-# Read more: https://github.com/cyu/rack-cors
+# config/initializers/cors.rb
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins 'localhost:3000', 'localhost:3001', '127.0.0.1:3000', '127.0.0.1:3001'
+    # Environment-specific frontend origins
+    if Rails.env.development?
+      origins 'http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', 'http://127.0.0.1:5174'
+    elsif Rails.env.production?
+      # Production frontend origins
+      origins 'https://wanderpath-journey.megu.riumu.net', 'http://wanderpath-journey.megu.riumu.net'
+    else
+      origins '*' # Test environment
+    end
 
-    resource '*',
+    # API routes
+    resource '/api/*',
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
-      credentials: true
+      credentials: true,
+      expose: ['Authorization', 'Content-Type'],
+      allow_headers: ['Authorization', 'Content-Type', 'Accept', 'Origin', 'X-Requested-With']
+      
+    # Legacy routes (for backward compatibility)
+    resource '/trips*',
+      headers: :any,
+      methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      credentials: true,
+      expose: ['Authorization', 'Content-Type'],
+      allow_headers: ['Authorization', 'Content-Type', 'Accept', 'Origin', 'X-Requested-With']
   end
 end

@@ -8,16 +8,27 @@ User.destroy_all
 
 puts "テストデータの作成を開始します..."
 
-# 管理者ユーザーの作成
+# 管理者ユーザーの作成（ユーザー要求に合わせて修正）
 admin = User.create!(
-  email: "admin@example.com",
+  email: "adminAexaple.com",
   username: "admin",
   password: "password",
   password_confirmation: "password",
   admin: true
 )
 
-puts "  - 管理者ユーザーを作成しました"
+puts "  - 管理者ユーザーを作成しました (adminAexaple.com/password)"
+
+# テストユーザーの作成
+test_user = User.create!(
+  email: "test123@example.com",
+  username: "test123",
+  password: "password123",
+  password_confirmation: "password123",
+  admin: false
+)
+
+puts "  - テストユーザーを作成しました (test123/password123)"
 
 # 1. 移動手段のマスターデータを作成
 train = Transportation.create!(category: "電車", name: "JR中央線")

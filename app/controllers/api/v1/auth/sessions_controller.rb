@@ -1,37 +1,71 @@
-class Api::V1::Auth::SessionsController < Devise::SessionsController
-  skip_before_action :verify_authenticity_token
-  respond_to :json
-
-  private
-
-  def respond_with(resource, _opts = {})
-    if resource.persisted?
+class Api::V1::Auth::SessionsController < Api::V1::BaseController
+  skip_before_action :authenticate_user!, only: [:create, :signup]
+  
+  # POST /api/v1/auth/login
+  def create
+    user = User.find_by(email: params[:email])
+    
+    if user&.valid_password?(params[:password])
+      token = generate_jwt(user)
       render json: {
-        status: { code: 200, message: 'ログインしました。', data: { user: UserSerializer.new(resource).serializable_hash[:data][:attributes] } }
+        message: 'ログインしました',
+        user: UserSerializer.new(user).serializable_hash[:data][:attributes],
+        token: token
       }, status: :ok
     else
       render json: {
-        status: { message: "ユーザーが見つかりませんでした。" }
+        error: 'メールアドレスまたはパスワードが正しくありません'
       }, status: :unauthorized
     end
   end
 
-  def respond_to_on_destroy
-    if request.headers['Authorization'].present?
-      jwt_payload = JWT.decode(request.headers['Authorization'].split(' ').last, Rails.application.secret_key_base).first
-      current_user = User.find(jwt_payload['sub'])
-    end
+  # POST /api/v1/auth/signup
+  def signup
+    user = User.new(user_params)
     
-    if current_user
+    if user.save
+      token = generate_jwt(user)
       render json: {
-        status: 200,
-        message: "ログアウトしました。"
-      }, status: :ok
+        message: 'アカウントが作成されました',
+        user: UserSerializer.new(user).serializable_hash[:data][:attributes],
+        token: token
+      }, status: :created
     else
       render json: {
-        status: 401,
-        message: "アクティブなセッションが見つかりませんでした。"
-      }, status: :unauthorized
+        error: 'アカウントの作成に失敗しました',
+        details: user.errors.full_messages
+      }, status: :unprocessable_entity
     end
+  end
+
+  # DELETE /api/v1/auth/logout
+  def destroy
+    # JWTトークンはステートレスなので、クライアント側で削除
+    render json: {
+      message: 'ログアウトしました'
+    }, status: :ok
+  end
+
+  # GET /api/v1/auth/me
+  def me
+    render json: {
+      user: UserSerializer.new(current_user).serializable_hash[:data][:attributes]
+    }, status: :ok
+  end
+
+  private
+
+  def user_params
+    params.permit(:email, :password, :password_confirmation)
+  end
+
+  def generate_jwt(user)
+    JWT.encode(
+      {
+        user_id: user.id,
+        exp: 24.hours.from_now.to_i
+      },
+      Rails.application.credentials.dig(:devise, :jwt_secret_key) || Rails.application.secret_key_base
+    )
   end
 end

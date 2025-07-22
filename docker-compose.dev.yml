@@ -1,0 +1,44 @@
+services:
+  # データベース (PostgreSQL + PostGIS)
+  db:
+    image: postgis/postgis:13-3.1
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: wanderpath_dev
+    ports:
+      - "54320:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d wanderpath_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Rails API (開発用)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: sh -c "rm -f tmp/pids/server.pid && bundle exec rails db:create db:migrate || bundle exec rails db:migrate && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/app
+      - gem_cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - RAILS_ENV=development
+      - DATABASE_HOST=db
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=password
+      - DATABASE_NAME=wanderpath_dev
+    stdin_open: true
+    tty: true
+
+volumes:
+  db-data:
+  gem_cache:

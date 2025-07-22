@@ -1,0 +1,80 @@
+services:
+  # データベース (PostgreSQL + PostGIS)
+  db:
+    image: postgis/postgis:13-3.1
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wanderpath-network
+
+  # Rails API (本番用) - グローバルプロキシがドメインでルーティング
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "bundle exec rails db:create db:migrate || bundle exec rails db:migrate && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/app
+      - gem_cache:/usr/local/bundle
+    expose:
+      - "3000"  # グローバルプロキシが内部ネットワーク経由でアクセス
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - RAILS_ENV=production
+      - DATABASE_HOST=db
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+    networks:
+      - wanderpath-network
+      - proxy  # グローバルプロキシネットワーク
+    labels:
+      # Traefik labels (例)
+      - "traefik.enable=true"
+      - "traefik.http.routers.wanderpath-api.rule=Host(`api.wanderpath.megu.riumu.net`)"
+      - "traefik.http.routers.wanderpath-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.wanderpath-api.loadbalancer.server.port=3000"
+      - "traefik.docker.network=proxy"
+
+  # Frontend (React) - グローバルプロキシがドメインでルーティング
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    expose:
+      - "4173"  # グローバルプロキシが内部ネットワーク経由でアクセス
+    environment:
+      - NODE_ENV=production
+    networks:
+      - wanderpath-network
+      - proxy  # グローバルプロキシネットワーク
+    labels:
+      # Traefik labels (例)
+      - "traefik.enable=true"
+      - "traefik.http.routers.wanderpath-frontend.rule=Host(`wanderpath-journey.megu.riumu.net`)"
+      - "traefik.http.routers.wanderpath-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.wanderpath-frontend.loadbalancer.server.port=4173"
+      - "traefik.docker.network=proxy"
+
+volumes:
+  db-data:
+  gem_cache:
+
+networks:
+  wanderpath-network:
+    driver: bridge
+  proxy:
+    external: true  # 既存のグローバルプロキシネットワーク
