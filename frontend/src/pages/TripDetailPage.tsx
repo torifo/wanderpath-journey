@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { tripService } from '../services/tripService';
 import { useAuth } from '../context/AuthContext';
-import type { Trip, Spot } from '../types/trip';
+import type { Trip } from '../types/trip';
 
 const TripDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -237,7 +237,7 @@ const TripDetailPage: React.FC = () => {
 
           {trip.spots && trip.spots.length > 0 ? (
             <div className="space-y-4">
-              {trip.spots.map((spot, index) => (
+              {trip.spots.map((spot) => (
                 <div key={spot.id} className="bg-white/5 rounded-xl p-6 border border-white/10">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">

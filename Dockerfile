@@ -27,7 +27,7 @@ FROM base AS build
 
 # Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libpq-dev pkg-config && \
+    apt-get install --no-install-recommends -y build-essential git libpq-dev pkg-config libyaml-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
@@ -43,7 +43,13 @@ COPY . .
 RUN bundle exec bootsnap precompile app/ lib/
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 \
+    DATABASE_HOST=dummy \
+    DATABASE_USER=dummy \
+    DATABASE_PASSWORD=dummy \
+    DATABASE_NAME=dummy \
+    RAILS_MAX_THREADS=5 \
+    ./bin/rails assets:precompile
 
 
 

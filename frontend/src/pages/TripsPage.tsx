@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { tripService } from '../services/tripService';
 import { useAuth } from '../context/AuthContext';
 import type { Trip } from '../types/trip';
@@ -9,7 +9,6 @@ const TripsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadTrips();
