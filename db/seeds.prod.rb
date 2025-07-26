@@ -13,11 +13,32 @@ end
 train = Transportation.find_or_create_by!(category: "電車", name: "電車")
 bus = Transportation.find_or_create_by!(category: "バス", name: "バス") 
 walk = Transportation.find_or_create_by!(category: "徒歩", name: "徒歩")
-car = Transportation.find_or_create_by!(category: "車", name: "rレンタカー")
+car = Transportation.find_or_create_by!(category: "車", name: "レンタカー")
 
 puts "  - 移動手段マスターデータを作成しました"
 
-# 2. 本番管理者ユーザーの作成（環境変数から取得）
+# 2. デフォルト開発者アカウントの作成
+# ID=0: デバッグアカウント
+# debug_user = User.find_or_create_by!(email: 'debug@wanderpath.megu.riumu.net') do |user|
+#   user.username = 'debug'
+#   user.password = 'debug123'
+#   user.password_confirmation = 'debug123'
+#   user.admin = false
+# end
+
+# puts "  - デバッグアカウントを作成しました (debug@wanderpath.megu.riumu.net / debug123)"
+
+# ID=1: 開発者個人アカウント
+dev_user = User.find_or_create_by!(email: 'toriforiumu.clover@gmail.com') do |user|
+  user.username = 'toriforiumu'
+  user.password = 'Ak10ky29wP'
+  user.password_confirmation = 'Ak10ky29wP'
+  user.admin = false
+end
+
+puts "  - 開発者個人アカウントを作成しました (toriforiumu.clover@gmail.com / Ak10ky29wP)"
+
+# 3. 本番管理者ユーザーの作成（環境変数から取得）
 admin_email = ENV['ADMIN_EMAIL'] || 'admin@wanderpath.megu.riumu.net'
 admin_password = ENV['ADMIN_PASSWORD'] || SecureRandom.hex(12)
 

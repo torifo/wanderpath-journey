@@ -3,22 +3,22 @@ import type { LoginCredentials, SignupData, User } from '../types/auth';
 
 export const authService = {
   login: async (credentials: LoginCredentials) => {
-    const response = await apiClient.post('/api/v1/auth/login', credentials);
+    const response = await apiClient.post('/auth/login', credentials);
     return response.data;
   },
 
   logout: async () => {
-    const response = await apiClient.delete('/api/v1/auth/logout');
+    const response = await apiClient.delete('/auth/logout');
     return response.data;
   },
 
   signup: async (userData: SignupData) => {
-    const response = await apiClient.post('/api/v1/auth/signup', userData);
+    const response = await apiClient.post('/auth/signup', userData);
     return response.data;
   },
 
   validateToken: async (): Promise<User> => {
-    const response = await apiClient.get('/api/v1/auth/me');
+    const response = await apiClient.get('/auth/me');
     return response.data.user;
   }
 };

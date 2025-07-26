@@ -49,3 +49,5 @@ config/credentials.prod.yml.enc
 # Frontend build artifacts
 frontend/dist
 frontend/node_modules
+
+Detail.md
