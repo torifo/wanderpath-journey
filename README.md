@@ -1,29 +1,32 @@
-# プロジェクト「wanderpath-journey」開発ドキュメント
+# Wanderpath Journey
 
-このドキュメントは、Ruby on RailsとPostGISで構築された旅の記録アプリケーション「wanderpath-journey」の開発手順、設定、アーキテクチャをまとめたものです。
+This document outlines the development procedures, settings, and architecture for Wanderpath Journey, a travel logging application built with Ruby on Rails and a React frontend.
 
-## 1. プロジェクト概要
-目的: 旅行の記録を、位置情報（地図）と連携させて記録・表示するブログサイト。
+## 1. Project Overview
+**Objective:** A blog site for recording and displaying travel logs in conjunction with location information (maps).
 
-アーキテクチャ: モノリシック (Monolithic)
+**Architecture:** Monolithic Rails backend with a separate React frontend.
 
-フレームワーク: Ruby on Rails 7.2
+**Backend:**
+- Framework: Ruby on Rails 7.2
+- Database: PostgreSQL + PostGIS extension
+- Ruby Version: 3.3
 
-データベース: PostgreSQL + PostGIS拡張
+**Frontend:**
+- Framework: React (Vite)
+- UI: Tailwind CSS
 
-Rubyバージョン: 3.3
+## 2. Getting Started
+This project is containerized using Docker.
 
-## 2. 開発環境の起動と停止
-このプロジェクトはDockerで環境を構築しています。
-
-### サーバーの起動
+### Launching the Development Environment
 ```bash
-# プロジェクトルートで実行
+# Run from the project root
 docker compose up
 ```
-Webアプリケーションは `http://localhost:3000` で表示されます。
-
-データベースには、DBクライアントなどから `localhost:54320` で接続できます。
+- **Web Application (Frontend):** `http://localhost:5173`
+- **API Server (Backend):** `http://localhost:3000`
+- **Database:** Connect using a DB client at `localhost:54320`
 
 ### サーバーの停止
 `docker compose up` を実行しているターミナルで `Ctrl + C` を押します。
@@ -49,33 +52,24 @@ Webアプリケーションは `http://localhost:3000` で表示されます。
 └── docker-compose.yml  # Docker全体の設計図
 ```
 
-## 4. バックエンド (Ruby on Rails) 詳細
-### 4.1. Docker設定
-#### docker-compose.yml:
-`web` (Rails), `db` (PostGIS) の2つのコンテナを定義する設計図です。
+## 4. Backend (Ruby on Rails) Details
+### 4.1. Docker Configuration
+- **`docker-compose.yml`**: Defines the `web` (Rails), `db` (PostGIS), and `frontend` (React) services.
+- **`Dockerfile`**: Builds the Rails container based on Alpine Linux, installing Ruby and necessary libraries.
 
-ポートフォワーディング:
-- `3000:3000` (web): PCの3000番ポートをRailsコンテナの3000番に接続。
-- `54320:5432` (db): PCの54320番ポートをPostGISコンテナの5432番に接続。
+### 4.2. Database (PostgreSQL / PostGIS)
+- **Connection:** Database connection details are managed via environment variables, as defined in `config/database.yml`.
+- **Schema:** The database schema is managed through Rails migrations located in `db/migrate/`.
 
-#### docker/Dockerfile:
-Railsコンテナの設計図。Ruby本体や、git、postgresql-dev、yaml-devなど、gemのインストールやDB接続に必要なライブラリをインストールします。Alpine Linuxをベースにしています。
+### 4.3. Database Commands
+- **Create Database:** `docker compose run --rm web rails db:create` (run once)
+- **Run Migrations:** `docker compose run --rm web rails db:migrate`
+- **Rollback Migration:** `docker compose run --rm web rails db:rollback`
 
-### 4.2. データベース (PostgreSQL / PostGIS)
-#### 接続情報 (config/database.yml):
-Docker環境の環境変数を読み込むように設定済みです。
+## 5. Production Deployment
+The application is deployed to a VPS using Docker Compose with a production configuration.
 
-`host`にはdocker-compose.ymlで定義したサービス名である`db`が自動的に設定されます。
+- **Frontend:** `https://<your-frontend-domain>`
+- **API:** `https://<your-api-domain>`
 
-#### テーブル設計 (db/migrate/):
-データベースのテーブル構造は、マイグレーションファイルに定義されます。カラムの追加や変更は、新しいマイグレーションファイルを作成して行います。
-
-#### データベース関連のコマンド:
-- データベースの作成: `docker compose run --rm web rails db:create` (初回のみ)
-- マイグレーションの実行: `docker compose run --rm web rails db:migrate`
-- マイグレーションの取り消し: `docker compose run --rm web rails db:rollback`
-
-# ローカルデータベースダンプ
-\copy ( SELECT DISTINCT g.group_name, l.date FROM yarikuri_list l JOIN group_list g ON l.group_id = g.id ORDER BY g.group_name, l.date ) TO './trips_datas.csv' WITH CSV HEADER;
-## パス
-C:\Users\Swimm\develop\Web_Page\Megurium\wanderpath-journey\lib\data
+Sensitive information such as domain names, database credentials, and secret keys are managed via environment variables and are not hard-coded in the repository.
